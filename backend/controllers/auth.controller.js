@@ -131,7 +131,7 @@ export const login = async (req, res) => {
 	}
   };
   
-  export const logout = async (req, res) => {
+export const logout = async (req, res) => {
 	res.clearCookie("token");
 	res.status(200).json({
 		success: true, message: "Logout Successfully"
@@ -148,7 +148,7 @@ export const login = async (req, res) => {
 		}
 
 		// Generate reset token
-		const resetToken = crypto.randomBytes(20).toString("hex");
+		const resetToken = crypto.randomBytes(32).toString("hex");
 		const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
 
 		user.resetPasswordToken = resetToken;
@@ -194,6 +194,19 @@ export const login = async (req, res) => {
 
 	} catch (error) {
 		console.log("Error in resetPassword ", error)
+		res.status(400).json({success: false, message: error.message})
+	}
+  }
+
+  export const checkAuth = async(req, res) =>{
+	try {
+		const user = await User.findById(req.userId).select("-password");
+		if(!user){
+		 return res.status(400).json({success: false, message: "User not found"});
+		}
+		res.status(200).json({success: true, user})
+	} catch (error) {
+		console.log("Error in checkAuth ", error);
 		res.status(400).json({success: false, message: error.message})
 	}
   }
